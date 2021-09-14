@@ -23,8 +23,9 @@ async def tracer(
 
         await send_sock.sendto(packet, (dest, 33434))
         _, addr = await recv_sock.recvfrom(1024)
+        name = await socket.getnameinfo((addr[0], 0), 0)
 
-        await mem_channel.send((iteration, addr[0]))
+        await mem_channel.send((iteration, addr[0], name[0]))
 
 
 async def printer(
@@ -33,7 +34,7 @@ async def printer(
     dest: str
 ) -> None:
     async with mem_channel:
-        async for (iteration, addr) in mem_channel:
-            print('%d: %s' % (iteration, addr))
+        async for (iteration, addr, name) in mem_channel:
+            print('%d: %s (%s)' % (iteration, name, addr))
             if addr == dest:
                 await cancel_scope.cancel()
